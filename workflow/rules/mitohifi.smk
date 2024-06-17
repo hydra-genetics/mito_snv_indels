@@ -32,13 +32,14 @@ rule run_deepvariant:
 # Rule for running MitoHiFi with Docker
 rule run_mitohifi:
     input:
-        fasta=config.get("reference", {}).get("fasta", ""),  # Replace with actual input
+        fasta=config.get("mitohifi", {}).get("fasta", ""),  # Replace with actual input
     output:
-        outdir=config["mitohifi"]["outdir"],  # Replace with actual output directory
+        outfile="snv_indels/mitohifi/{sample}_{type}.mitohifi.res",  # This file doesn't actually exist, I just put it for the workflow to work, the output needed by the program is the outdir
     params:
         genome=config.get("mitohifi", {}).get("genome", ""),
         extra=config.get("mitohifi", {}).get("extra", ""),
-        outfolder=config.get("mitohifi", {}).get("outfolder", ""),
+        outdir=config["mitohifi"]["outdir"],  # Replace with actual output directory
+        #outfolder=config.get("mitohifi", {}).get("outfolder", ""),
     log:
         "snv_indels/mitohifi/{sample}_{type}.mitohifi.log",
     benchmark:
@@ -60,11 +61,11 @@ rule run_mitohifi:
     shell:
         """
         mkdir -p {output.outdir}
-        singularity exec {container} mitohifi \
+        mitohifi \
           -i {input.fasta} \
-          -o {output.outdir}
+          -o {output.outdir}  >& {log}
         """
 
 
 # Use ruleorder if needed to prioritize certain rules
-ruleorder: run_deepvariant > run_mitohifi
+# ruleorder: run_deepvariant > run_mitohifi
